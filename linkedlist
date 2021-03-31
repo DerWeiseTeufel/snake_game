@@ -1,0 +1,264 @@
+#include <iostream>
+
+using namespace std;
+template <class Item>
+class LinkedList
+{
+public:
+
+    class iterator;
+    LinkedList();
+    ~LinkedList();
+    void push_back(Item data);
+    void push_front(Item data);
+    void insert(const Item data, const int index);
+    Item& operator[](const int index);
+    int GetSize();
+    bool isEmpty();
+    void pop_back();
+    void pop_front();
+    void clear();
+    iterator begin()
+    {
+        return iterator(Head);
+    };
+    iterator end()
+    {
+        return iterator(Tail->pNext);
+    }
+    void insertafter(const Item checkdata, const Item indata);
+
+private:
+    template<class Type>
+    class Node
+    {
+    public:
+        Type data;
+        Node* pNext;
+        Node(Type data = Type(), Node* pNext = nullptr)
+        {
+            this->data = data;
+            this->pNext = pNext;
+        }
+    };
+    Node<Item>* Head;
+    int Size;
+    Node<Item>* Tail;
+};
+template <class Item>
+LinkedList<Item>::LinkedList()
+{
+    Size = 0;
+    Head = nullptr;
+    Tail = nullptr;
+
+}
+template <class Item>
+int LinkedList<Item>::GetSize()
+{
+    return Size;
+}
+
+template <class Item>
+bool LinkedList<Item>::isEmpty()
+{
+    return Size;
+}
+template <class Item>
+void LinkedList<Item>::pop_front()
+{
+    if (Head != nullptr)
+    {
+        Node<Item>* temp = Head->pNext;
+        delete Head;
+        Head = temp;
+        Size--;
+    }
+
+}
+template <class Item>
+void LinkedList<Item>::pop_back()
+{
+    if(Size!=0)
+    {
+        Node<Item>* temp = Tail;
+    }
+}
+
+
+
+
+template <class Item>
+LinkedList<Item>::~LinkedList()
+{
+    this->clear();
+}
+template <class Item>
+void LinkedList<Item>::clear()
+{
+    while(Size)
+    {
+        this->pop_front();
+    }
+}
+template <class Item>
+void LinkedList<Item>::push_back(Item data)
+{
+    if (Head == nullptr)
+    {
+        Head = new Node<Item>(data);
+        Tail = Head;
+    }
+    else
+    {
+        Tail->pNext = new Node<Item>(data);
+        Tail = Tail->pNext;
+    }
+    Size++;
+}
+template <class Item>
+void LinkedList<Item>::push_front(const Item data)
+{
+
+        Head = new Node<Item>(data,Head);
+        //if(Head == nullptr) Tail = Head;
+        Size++;
+
+
+}
+template <class Item>
+void LinkedList<Item>::insert(Item data, const int index)
+{
+    if (Head == nullptr)
+    {
+        Head = new Node<Item>(data);
+        Tail = Head;
+    }
+    else
+    {
+        if (index < Size) {
+            //        return "out of range";
+               // if (Head == nullptr) return "list is empty";
+            int counter = 0;
+            Node<Item>* current = this->Head;
+            while (current != nullptr && index!=counter )
+            {
+
+                current = current->pNext;
+                counter++;
+            }
+            Node<Item>* temp = new Node<Item>(data);
+
+
+        }
+    }
+}
+template <class Item>
+Item& LinkedList<Item>:: operator [](const int index)
+{
+    if (index < Size) {
+        //        return "out of range";
+           // if (Head == nullptr) return "list is empty";
+        int counter = 0;
+        Node<Item>* current = this->Head;
+        while (current != nullptr)
+        {
+            if (counter == index)
+            {
+                return current->data;
+            }
+            current = current->pNext;
+            counter++;
+        }
+    }
+
+
+};
+template<class Item>
+void LinkedList<Item>::insertafter(const Item checkdata, const Item indata)
+{
+
+        Node<Item>* temp = this->Head;
+      // Node<Item>* current = this->Head;
+        while(temp!= nullptr)
+        {
+           // cout<<temp->data<<'\n';
+            if(temp->data == checkdata)
+            {
+
+                temp->pNext = new Node<Item>(indata, temp->pNext);
+                //temp->pNext = current;
+                Size++;
+
+            }
+            temp = temp->pNext;
+        }
+
+}
+template<class Item>
+class LinkedList<Item>::iterator
+{
+private:
+    Node<Item>* current;
+public:
+    Item& operator*()
+    {
+       return current->data;
+    }
+    iterator& operator ++()
+    {
+          current = current->pNext;
+          return *this;
+    }
+    iterator( Node<Item>* object)
+    {
+         current = object;
+    };
+    bool operator == ( const iterator& other)
+    {
+        if(this->current ==other->current)return true;
+        else false;
+    }
+    bool operator !=(const iterator& other)
+    {
+        if(this->current == other.current)
+            return false;
+            else true;
+    }
+    ~iterator()
+    {
+
+    };
+};
+//template <class Item>
+//LinkedList<Item>::iterator LinkedList<Item>::begin()
+//{
+//    return iterator(head);
+//}
+
+int main()
+{
+    LinkedList<int> lst;
+   // lst.push_front(100);
+    lst.push_back(7);
+    lst.push_back(7);
+    lst.push_back(6);
+
+    lst.push_back(7);
+
+    lst.push_front(2);
+    lst.insertafter(7,100);
+     cout<<"Size = "<<lst.GetSize()<<'\n';
+    for(int i = 0 ; i< lst.GetSize();i++)
+    {
+        cout<<lst[i]<<'\n';
+    }
+    cout<<endl;
+    cout<<endl;
+    cout<<endl;
+    for(LinkedList<int>::iterator it = lst.begin();it!=lst.end();++it)
+    {
+        cout<<*it<<'\n';
+    }
+    return 0;
+}
