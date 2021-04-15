@@ -1,0 +1,244 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <algorithm>
+
+
+using namespace std;
+
+class Student;
+class Solution
+{
+private:
+    string INnameFile;
+    string OUTnameFile;
+    //ifstream sfin; не хранить
+    //ofstream sfout; не хранить
+    vector<Student> allStudents;
+
+public:
+    // Solution(string nameFile);
+    void readF(const string nameFile);
+    vector<Student> getStudents() const
+    {
+        return allStudents;
+    }
+
+    void writeF(const string INnameFile);
+
+    Solution() = default;
+
+    ~Solution() {};
+    // template<class Item>
+    // friend void bubble_sortST(vector<Item>&arr);
+    /*void bubble_sortST()
+    {
+        for (int i = 0; i < allStudents.size() - 1; i++)
+            for (int j = allStudents.size() - 1; j > i; j--)
+                if (allStudents[j - 1] > allStudents[j])
+                    swap(allStudents[j], allStudents[j - 1]);
+    }*/
+
+};
+template<class Item>
+void bubble_sort(vector<Item>& arr)
+{
+    for (int i = 0; i < arr.size() - 1; i++)
+        for (int j = arr.size() - 1; j > i; j--)
+            if (arr[j-1] > arr[j])
+                swap(arr[j],arr[j-1]);
+}
+struct date
+{
+  //  int day;
+   // int month;
+    int year;
+};
+enum class M : char
+{
+      math = 'A' ,//= ,// C++11 allows the extra comma     это мусор
+
+};
+ enum  Mark
+ {
+     A=5 ,B=4 ,C=3,D=2,F = 1        //оценка
+     } ;
+     istream& operator >>(istream&fin, Mark& result)  //how to read marks from a file?
+     {
+         char fileMark;
+         fin>>fileMark;
+         switch(fileMark)
+         {
+             case 'A':result = A; break;
+             case 'B'||'4':result = B;  break;
+             case 'C':result = C;  break;
+             case 'D':result = D;  break;
+             case 'F':result = F;  break;
+             default: break;
+         }
+
+         return fin;
+     }
+
+struct performance             //student's performance
+{
+    Mark math;
+    Mark physics;
+    Mark history;
+    Mark socialstudies;
+    Mark english;
+    Mark& operator[](const int index )
+    {
+        if (index >= 0)
+        {
+            switch (index)
+            {                             //access marks through overloaded operator[]
+            case 0:return math; break;
+            case 1: return physics; break;
+            case 2: return history; break;
+            case 3: return socialstudies; break;
+            case 4: return english; break;
+            default: break;
+            }
+        }
+    }
+    double GPE()  const
+    {
+        return double(math + physics + history + socialstudies + english)/5;          // count GPE
+    }
+   //friend istream& operator >> (istream& fin, performance& cur);
+    /*istream& operator >> (istream& fin)
+    {
+        fin >> math >> " " >> physics >> " " >> history >> " " >> socialstudies >> " " >> english;
+        return fin;
+
+    }*/
+};
+istream& operator >> (istream& fin, performance& cur)     //how to read performance from a file
+{
+    Mark math;
+    fin>>math;
+
+    fin>>cur.math >>cur.physics  >> cur.history  >> cur.socialstudies  >> cur.english;
+    return fin;
+
+}
+
+class Student
+{
+    // string name, last_name, middle_name;
+    int classnum;
+   // date dateofBirth;
+    int year;
+    performance semResults;
+    //performance semResults;
+    string name, last_name, middle_name;
+public:
+    void SetClassNum(const int index) { classnum = index; }
+    void Setyear(const int index) { year = index; }
+    void SetMarks(const performance cur) { semResults = cur; }
+    void setName(string name)
+    {
+        name[0] = toupper(name[0]);
+        this->name;
+    }
+
+    void setLastName(string last_name)
+    {
+        last_name[0] = toupper(last_name[0]);
+        this->last_name = last_name;
+    }
+    void setMiddleName(string middle_name)
+    {
+        middle_name[0] = toupper(middle_name[0]);
+        this->middle_name = middle_name;
+    }
+    string getName()const
+    {
+        return name;
+    }
+    string getLastName() const
+    {
+        return last_name;
+    }
+    string getMiddleName()const
+    {
+        return middle_name;
+    }
+//    auto operator <=>(const Student &)const = default;
+};
+
+void Solution::readF(const string nameFile)
+{
+    ifstream fin(nameFile);//creating a stream to read info ab students from a file
+    while (EOF != fin.peek())
+    {
+        string current_name; int year, classNum;
+        performance curMark;
+
+
+        Student current;
+        fin >> classNum;
+        current.SetClassNum(classNum);
+        fin >> current_name;
+        current.setLastName(current_name);
+        fin >> current_name;
+        current.setName(current_name);
+        fin >> current_name;
+        current.setMiddleName(current_name);
+        fin >> year;                                       //reading last,middle name and name from a file
+        current.Setyear(year);
+            fin >> curMark;
+        current.SetMarks(curMark);
+        allStudents.push_back(current);
+    }
+    fin.close();
+}
+void Solution::writeF(const string outname)
+{
+    ofstream fout(outname);
+    for (int i = 0; i < allStudents.size(); i++)
+    {
+        fout << allStudents[i].getLastName() << '\t' << allStudents[i].getName() << '\t' << allStudents[i].getMiddleName() << '\n';
+    }
+    fout.close();
+}
+int main()
+{
+    //Student student1, student2;
+    //student1.setLastName("wayn");
+    //student1.setName("John");
+    //student1.setMiddleName("James");
+    //student2.setLastName("Wayne");
+    //student2.setName("Sam");
+    //student2.setMiddleName("Treverson");
+    //if (student1 > student2) cout << "student1 > student2";
+    //else cout << "student1 < student2\n";
+    ///*Solution frstattempt;
+    //frstattempt.readF("input.txt");
+    //frstattempt.bubble_sort();
+    //frstattempt.writeF("output.txt");*/
+    //vector<Student> stds;
+    //stds.push_back(student1);
+    //stds.push_back(student2);
+    //if (stds[0] > stds[1]) cout << "student1 > student2";
+    //else cout << "student1 < student2\n";
+    performance mine;
+    mine.math = A;
+    mine.physics = A;
+    mine.history = B;
+    mine.english = A;
+    mine.socialstudies = A;
+    cout << mine.GPE()<<'\n';
+    cout << mine[0] << '\n';
+//    mine[0] = 4;
+     cout << mine[0] << '\n';
+    ifstream fin("input.txt");
+    Mark calculus;
+    fin>>calculus; int n = 1;
+    for(int i = 0;i<n;i++)
+        cout<<calculus;
+        fin.close();
+    return 0;
+}
