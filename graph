@@ -15,12 +15,13 @@ class Graph:
 
     @classmethod
     def createConsole(cls, n,  dtype=str):
+        temp = dict(dict())
         for _ in range(n):
             a = [x for x in input().split()]
-            temp = dict(dict())
             v = dtype(a[0])
             to = dtype(a[1])
-            temp[v] = dict()
+            if v not in temp:
+                temp[v] = dict()
             temp[v][to] = int(a[2])
         return cls(temp)
 
@@ -52,6 +53,7 @@ class Graph:
         return False
 
 
-
-gr = Graph.createConsole(5, int)
+n = int(input())
+t = type(input())
+gr = Graph.createConsole(n, t)
 gr.Show()
