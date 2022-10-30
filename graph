@@ -51,7 +51,6 @@ class Graph:
             return True
         return False
 
-    # innopolis password AjbVfQd2H787tgW
 
 
 gr = Graph.createConsole(5, int)
