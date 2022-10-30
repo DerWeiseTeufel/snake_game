@@ -1,0 +1,58 @@
+class Graph:
+    Gr = dict(dict())
+
+    def __init__(self, DICT):
+        self.Gr = DICT.copy()
+
+    @classmethod
+    def createFromFile(cls, path, dtype=str):
+        with open(path) as f:
+            for line in f:
+                a = [x for x in line.split()]
+                cls.Gr[dtype[a[0]]] = dict()
+                cls.Gr[dtype(a[0])][dtype(a[1])] = int(a[2])
+        return cls
+
+    @classmethod
+    def createConsole(cls, n,  dtype=str):
+        for _ in range(n):
+            a = [x for x in input().split()]
+            temp = dict(dict())
+            v = dtype(a[0])
+            to = dtype(a[1])
+            temp[v] = dict()
+            temp[v][to] = int(a[2])
+        return cls(temp)
+
+    @classmethod
+    def createCopy(cls, other):
+        return cls(other.Gr)
+    def Show(self):
+        print(self.Gr)
+        for v in self.Gr.values():
+            for e in v.values():
+                print(e)
+    def AddVertex(self, name, dtype=str):
+        if (self.Gr.get(name) == None):
+            self.Gr.setdefault(name, dtype)
+            return True
+        return False
+
+    def AddEdge(self, v, to, w=1):
+        if self.Gr.get(v).get(to) == None:
+            self.Gr[v][to] = w
+            return True
+        return False
+
+    def DelEdge(self, v, to):
+        if (self.Gr.get(v).get(to) != None):
+            # self.Gr[v][to] =None
+            self.Gr[v].pop(to)
+            return True
+        return False
+
+    # innopolis password AjbVfQd2H787tgW
+
+
+gr = Graph.createConsole(5, int)
+gr.Show()
