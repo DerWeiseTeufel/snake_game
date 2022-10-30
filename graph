@@ -1,9 +1,12 @@
 class Graph:
     Gr = dict(dict())
-
-    def __init__(self, DICT):
+    dtype = str
+    Weighted = True
+    Directed = True
+    def __init__(self, DICT, dir, w):
         self.Gr = DICT.copy()
-
+        self.Directed = bool(dir)
+        self.Weighted = bool(w)
     @classmethod
     def createFromFile(cls, path, dtype=str):
         with open(path) as f:
@@ -13,17 +16,32 @@ class Graph:
                 cls.Gr[dtype(a[0])][dtype(a[1])] = int(a[2])
         return cls
 
+
     @classmethod
-    def createConsole(cls, n,  dtype=str):
+    def createConsole(cls, n, dir = True, weighted = True, dtype = str):
         temp = dict(dict())
         for _ in range(n):
             a = [x for x in input().split()]
+            if weighted and len(a) == 2:
+                weighted = False
+
             v = dtype(a[0])
             to = dtype(a[1])
             if v not in temp:
                 temp[v] = dict()
-            temp[v][to] = int(a[2])
-        return cls(temp)
+            if to not in temp:
+                temp[to] = dict()
+            if weighted:
+                temp[v][to] = int(a[2])
+            else:
+                temp[v][to] = 0
+            if not dir:
+                if weighted:
+                    temp[to][v] = int(a[2])
+                else:
+                    temp[to][v] = 0
+
+        return cls(temp,dir,weighted)
 
     @classmethod
     def createCopy(cls, other):
@@ -33,13 +51,13 @@ class Graph:
         for v in self.Gr.values():
             for e in v.values():
                 print(e)
-    def AddVertex(self, name, dtype=str):
+    def AddVertex(self, name):
         if (self.Gr.get(name) == None):
-            self.Gr.setdefault(name, dtype)
+            self.Gr.setdefault(name, dict())
             return True
         return False
 
-    def AddEdge(self, v, to, w=1):
+    def AddEdge(self, v, to, w = None):
         if self.Gr.get(v).get(to) == None:
             self.Gr[v][to] = w
             return True
@@ -52,8 +70,115 @@ class Graph:
             return True
         return False
 
+cmd_create = "CREATE_GRAPH"
+cmd_edge = "ADD_EDGE"
+cmd_node = "ADD_NODE"
+cmd_del_edge = "DELETE_EDGE"
+cmd_del_node = "DELETE_NODE"
+cmd_print = "PRINT_GRAPH"
+cmd_exit = "EXIT"
+cmd_fail = "FAILED"
+def Menu():
+    print(cmd_create)
+    print(cmd_edge)
+    print(cmd_node)
+    print(cmd_del_edge)
+    print(cmd_del_node)
+    print(cmd_print)
+    print(cmd_exit)
 
+"""
 n = int(input())
-t = type(input())
-gr = Graph.createConsole(n, t)
+gr = Graph.createConsole(n)
 gr.Show()
+gr.AddVertex(input())
+gr.Show()
+a = input().split()
+gr.AddEdge(a[0], a[1], int(a[2]))
+gr.Show()
+a = input().split()
+gr.DelEdge(a[0],a[1])
+gr.Show()
+"""
+flag = True
+while True:
+
+    while flag:
+        print("Hello, User, this is Graph, you can line your commands just like they are listed below: ")
+        print(cmd_create)
+        decision = input().upper()
+        if decision == cmd_create:
+            print("NUMBER OF LINES")
+            n = int(input().split()[0])
+            print("DIRECTED")
+            d = input().upper()
+            if d == "YES" or d == "DIRECTED":
+                d = True
+            else:
+                d = False
+            print("WEIGHTED")
+            w = input().upper()
+            if w == "YES" or w == "WEIGHTED":
+                w = True
+            else:
+                w = False
+            print("TYPE")
+            t = input()
+            if(t == "string"):
+                t = type("str")
+            elif(t == "int"):
+                t = type(3)
+            elif(t == "double"):
+                t = type(3.5)
+            else:
+                print(cmd_fail)
+                continue
+            ngr = Graph.createConsole(n,d,w)
+            flag = False
+        else:
+            print(cmd_fail)
+    Menu()
+    decision = (input().upper()).split()
+    if not decision:
+        print(cmd_fail)
+        continue
+    if(decision[0] == cmd_create):
+        print("NUMBER OF LINES")
+        n = int(input().split()[0])
+        ngr = Graph.createConsole(n)
+        continue
+    if decision[0] == cmd_print:
+        ngr.Show()
+        continue
+
+    if decision[0] == cmd_edge:
+        print("FROM:")
+        v = input()
+        print("TO:")
+        v2 = input()
+
+        if ngr.Weighted:
+            print("WEIGHT:")
+            w = int(input())
+        if not ngr.AddEdge(v, v2, w):
+            print(cmd_fail)
+        continue
+    if decision[0] == cmd_node:
+        print("NEW:")
+        node = input().split()[0]
+        if not ngr.AddVertex(node):
+            print(cmd_fail)
+        continue
+    if decision[0] == cmd_del_edge:
+        ...
+    if decision[0] == cmd_del_node:
+        ...
+    if decision[0] == cmd_exit:
+        print("Rate my performance:")
+        n = int(input())
+        break
+    print(cmd_fail)
+    print("try again")
+
+
+
