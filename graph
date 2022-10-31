@@ -9,12 +9,63 @@ class Graph:
         self.Weighted = bool(w)
     @classmethod
     def createFromFile(cls, path, dtype=str):
+        temp = dict(dict())
+        flag = True
         with open(path) as f:
             for line in f:
-                a = [x for x in line.split()]
-                cls.Gr[dtype[a[0]]] = dict()
-                cls.Gr[dtype(a[0])][dtype(a[1])] = int(a[2])
-        return cls
+                a = [x for x in line.upper().split()]
+                if flag:
+                    d = a[0].upper()
+                    if d == "YES" or d == "DIRECTED":
+                        d = True
+                    elif d == "NO" or d == "UNDRIRECTED":
+                        d = False
+                    else:
+                        print(cmd_fail)
+                        return None
+                    w = a[1].upper()
+                    if w == "YES" or w == "WEIGHTED":
+                        w = True
+                    elif w == "NO" or w == "WEIGHTED":
+                        w = False
+                    else:
+                        print(cmd_fail)
+                        return None
+                    t = a[2]
+                    if (t == "string"):
+                        t = type("str")
+                    elif (t == "int"):
+                        t = type(3)
+                    elif (t == "double"):
+                        t = type(3.5)
+                    else:
+                        print(cmd_fail)
+                        return None
+                    flag = False
+                weighted = w
+                dir = d
+                dtype = t
+                if weighted and len(a) == 2:
+                    weighted = False
+                if len(a) < 2:
+                    print(cmd_fail)
+                    return
+                v = dtype(a[0])
+                to = dtype(a[1])
+                if v not in temp:
+                    temp[v] = dict()
+                if to not in temp:
+                    temp[to] = dict()
+                if weighted:
+                    temp[v][to] = int(a[2])
+                else:
+                    temp[v][to] = 0
+                if not dir:
+                    if weighted:
+                        temp[to][v] = int(a[2])
+                    else:
+                        temp[to][v] = 0
+        return cls(temp, dir, weighted)
 
 
     @classmethod
@@ -24,7 +75,9 @@ class Graph:
             a = [x for x in input().split()]
             if weighted and len(a) == 2:
                 weighted = False
-
+            if len(a)<2:
+                print(cmd_fail)
+                return
             v = dtype(a[0])
             to = dtype(a[1])
             if v not in temp:
@@ -45,7 +98,7 @@ class Graph:
 
     @classmethod
     def createCopy(cls, other):
-        return cls(other.Gr)
+        return cls(other.Gr, other.Directed, other.Weighted)
     def Show(self):
         print(self.Gr)
         for v in self.Gr.values():
@@ -58,15 +111,19 @@ class Graph:
         return False
 
     def AddEdge(self, v, to, w = None):
-        if self.Gr.get(v).get(to) == None:
-            self.Gr[v][to] = w
-            return True
-        return False
+        if (self.Weighted and w == None) or not self.Weighted and w or not self.Gr.get(v) or not self.Gr.get(to) or self.Gr[v][to] != None:
+            return False
+
+        self.Gr[v][to] = w
+        return True
+
 
     def DelEdge(self, v, to):
         if (self.Gr.get(v).get(to) != None):
             # self.Gr[v][to] =None
             self.Gr[v].pop(to)
+            if not self.Directed:
+                self.Gr[to].pop(v)
             return True
         return False
 
@@ -78,8 +135,10 @@ cmd_del_node = "DELETE_NODE"
 cmd_print = "PRINT_GRAPH"
 cmd_exit = "EXIT"
 cmd_fail = "FAILED"
+cmd_file = "FROM_FILE"
 def Menu():
     print(cmd_create)
+    print(cmd_file)
     print(cmd_edge)
     print(cmd_node)
     print(cmd_del_edge)
@@ -106,6 +165,7 @@ while True:
     while flag:
         print("Hello, User, this is Graph, you can line your commands just like they are listed below: ")
         print(cmd_create)
+        print(cmd_file)
         decision = input().upper()
         if decision == cmd_create:
             print("NUMBER OF LINES")
@@ -114,14 +174,20 @@ while True:
             d = input().upper()
             if d == "YES" or d == "DIRECTED":
                 d = True
-            else:
+            elif d == "NO" or d == "UNDRIRECTED":
                 d = False
+            else:
+                print(cmd_fail)
+                continue
             print("WEIGHTED")
             w = input().upper()
             if w == "YES" or w == "WEIGHTED":
                 w = True
-            else:
+            elif w == "NO" or w == "UNWEIGHTED":
                 w = False
+            else:
+                print(cmd_fail)
+                continue
             print("TYPE")
             t = input()
             if(t == "string"):
@@ -135,6 +201,9 @@ while True:
                 continue
             ngr = Graph.createConsole(n,d,w)
             flag = False
+        if decision == cmd_file:
+            path = input()
+            ngr = Graph.createFromFile(path)
         else:
             print(cmd_fail)
     Menu()
@@ -145,7 +214,37 @@ while True:
     if(decision[0] == cmd_create):
         print("NUMBER OF LINES")
         n = int(input().split()[0])
-        ngr = Graph.createConsole(n)
+        print("DIRECTED")
+        d = input().upper()
+        if d == "YES" or d == "DIRECTED":
+            d = True
+        elif d == "NO" or d == "UNDRIRECTED":
+            d = False
+        else:
+            print(cmd_fail)
+            continue
+        print("WEIGHTED")
+        w = input().upper()
+        if w == "YES" or w == "WEIGHTED":
+            w = True
+        elif w == "NO" or w == "WEIGHTED":
+            w = False
+        else:
+            print(cmd_fail)
+            continue
+
+        print("TYPE")
+        t = input()
+        if (t == "string"):
+            t = type("str")
+        elif (t == "int"):
+            t = type(3)
+        elif (t == "double"):
+            t = type(3.5)
+        else:
+            print(cmd_fail)
+            continue
+        ngr = Graph.createConsole(n, d, w, t)
         continue
     if decision[0] == cmd_print:
         ngr.Show()
@@ -153,9 +252,9 @@ while True:
 
     if decision[0] == cmd_edge:
         print("FROM:")
-        v = input()
+        v = ngr.dtype(input())
         print("TO:")
-        v2 = input()
+        v2 = ngr.dtype(input())
 
         if ngr.Weighted:
             print("WEIGHT:")
@@ -171,6 +270,9 @@ while True:
         continue
     if decision[0] == cmd_del_edge:
         ...
+    if decision[0] == cmd_file:
+        path = input()
+        ngr = Graph.createFromFile(path)
     if decision[0] == cmd_del_node:
         ...
     if decision[0] == cmd_exit:
