@@ -5,8 +5,8 @@ class Graph:
     Directed = True
     def __init__(self, DICT, dir, w):
         self.Gr = DICT.copy()
-        self.Directed = bool(dir)
-        self.Weighted = bool(w)
+        self.Directed = dir
+        self.Weighted = w
     @classmethod
     def createFromFile(cls, path, dtype=str):
         temp = dict(dict())
@@ -18,10 +18,10 @@ class Graph:
                     d = a[0].upper()
                     if d == "YES" or d == "DIRECTED":
                         d = True
-                    elif d == "NO" or d == "UNDRIRECTED":
+                    elif d == "NO" or d == "UNDIRECTED":
                         d = False
                     else:
-                        print(cmd_fail)
+                        print(f"{cmd_fail} to read")
                         return None
                     w = a[1].upper()
                     if w == "YES" or w == "WEIGHTED":
@@ -31,20 +31,22 @@ class Graph:
                     else:
                         print(cmd_fail)
                         return None
-                    t = a[2]
-                    if (t == "string"):
+                    t = a[2].upper()
+                    if (t == "STRING"):
                         t = type("str")
-                    elif (t == "int"):
+                    elif (t == "INT"):
                         t = type(3)
-                    elif (t == "double"):
+                    elif (t == "DOUBLE"):
                         t = type(3.5)
                     else:
                         print(cmd_fail)
                         return None
                     flag = False
-                weighted = w
-                dir = d
-                dtype = t
+                    
+                    weighted = w
+                    dir = d
+                    dtype = t
+                    continue
                 if weighted and len(a) == 2:
                     weighted = False
                 if len(a) < 2:
@@ -65,7 +67,11 @@ class Graph:
                         temp[to][v] = int(a[2])
                     else:
                         temp[to][v] = 0
-        return cls(temp, dir, weighted)
+        try:
+            return cls(temp, dir, weighted)
+        except:
+            print("PROCESS FAILED")
+            return None
 
 
     @classmethod
@@ -111,19 +117,29 @@ class Graph:
         return False
 
     def AddEdge(self, v, to, w = None):
-        if (self.Weighted and w == None) or not self.Weighted and w or not self.Gr.get(v) or not self.Gr.get(to) or self.Gr[v][to] != None:
+        if (self.Weighted and w == None) or not self.Weighted and w or not self.Gr.get(v) or not self.Gr.get(to) or self.Gr[v].get(to) != None:
             return False
 
         self.Gr[v][to] = w
+        if not self.Directed:
+            self.Gr[to][v] = w
         return True
 
 
     def DelEdge(self, v, to):
-        if (self.Gr.get(v).get(to) != None):
-            # self.Gr[v][to] =None
+        if self.Gr.get(v) != None and self.Gr.get(v) != None and self.Gr[v].get(to)!= None:
             self.Gr[v].pop(to)
             if not self.Directed:
                 self.Gr[to].pop(v)
+            return True
+        return False
+    def DelNode(self, v):
+        if self.Gr.get(v) != None:
+            self.Gr.pop(v)
+            for from_v in self.Gr.keys():
+                if self.Gr[from_v].get(v) != None:
+                    self.Gr[from_v].pop(v)
+
             return True
         return False
 
@@ -136,6 +152,7 @@ cmd_print = "PRINT_GRAPH"
 cmd_exit = "EXIT"
 cmd_fail = "FAILED"
 cmd_file = "FROM_FILE"
+cmd_ok = "SUCCESS"
 def Menu():
     print(cmd_create)
     print(cmd_file)
@@ -167,7 +184,7 @@ while True:
         print(cmd_create)
         print(cmd_file)
         decision = input().upper()
-        if decision == cmd_create:
+        if decision == cmd_create:#CREATE FROM CONSOLE
             print("NUMBER OF LINES")
             n = int(input().split()[0])
             print("DIRECTED")
@@ -199,11 +216,31 @@ while True:
             else:
                 print(cmd_fail)
                 continue
-            ngr = Graph.createConsole(n,d,w)
+            ngr = Graph.createConsole(n,d,w) #CONSTRUCTOR CALL
             flag = False
-        if decision == cmd_file:
+        if decision == cmd_file:#CREATE FROM FILE
             path = input()
+            """
+            print("DIRECTED")
+            d = input().upper()
+            if d == "YES" or d == "DIRECTED":
+                d = True
+            elif d == "NO" or d == "UNDRIRECTED":
+                d = False
+            else:
+                print(cmd_fail)
+                continue
+            print("WEIGHTED")
+            w = input().upper()
+            if w == "YES" or w == "WEIGHTED":
+                w = True
+            elif w == "NO" or w == "UNWEIGHTED":
+                w = False
+            else:
+                print(cmd_fail)
+                continue"""
             ngr = Graph.createFromFile(path)
+            flag = False
         else:
             print(cmd_fail)
     Menu()
@@ -247,6 +284,14 @@ while True:
         ngr = Graph.createConsole(n, d, w, t)
         continue
     if decision[0] == cmd_print:
+        if ngr.Directed:
+            print("DIRECTED")
+        else:
+            print("UNDIRECTED")
+        if ngr.Weighted:
+            print("WEIGHTED")
+        else:
+            print("UNWEIGHTED")
         ngr.Show()
         continue
 
@@ -264,23 +309,38 @@ while True:
         continue
     if decision[0] == cmd_node:
         print("NEW:")
-        node = input().split()[0]
+        node = input().split()[0].upper()
         if not ngr.AddVertex(node):
             print(cmd_fail)
         continue
     if decision[0] == cmd_del_edge:
-        ...
+        print("FROM")
+        fr_del = input()
+        print("TO")
+        to_del = input()
+        if ngr.DelEdge(fr_del, to_del):
+            print(cmd_ok)
+        else:
+            print(cmd_fail)
+        continue
     if decision[0] == cmd_file:
         path = input()
         ngr = Graph.createFromFile(path)
+        continue
     if decision[0] == cmd_del_node:
-        ...
+        print("WHICH ONE")
+        v_to_del = ngr.dtype(input())
+        if ngr.DelNode(v_to_del):
+            print(cmd_ok)
+        else:
+            print(cmd_fail)
+        continue
+        
     if decision[0] == cmd_exit:
         print("Rate my performance:")
         n = int(input())
         break
     print(cmd_fail)
     print("try again")
-
 
 
