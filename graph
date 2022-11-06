@@ -1,4 +1,5 @@
 import copy
+import queue
 
 
 class Graph:
@@ -176,6 +177,21 @@ class Graph:
             return("Graph is Directed, impossible to perform the operation")
             return None
         return (" ".join(map(str, [x for x in self.Gr.keys() if len(self.Gr[x]) == 1])))
+    def FindNumOfPaths(self, u, v):
+        q = queue.Queue()
+        paths = dict.fromkeys(self.Gr.keys(), 0)
+        paths[u] = 1
+        used = len(self.Gr) * [0]
+        q.put(u)
+        while not q.empty():
+            k = q.get()
+            for temp in self.Gr[k].keys():
+                paths[temp] = paths[k] + paths[temp]
+                
+                
+                
+
+
 
 cmd_create = "CREATE_GRAPH"
 cmd_edge = "ADD_EDGE"
