@@ -1,6 +1,8 @@
 import copy
-import queue
-
+try:
+   import queue
+except ImportError:
+   import Queue as queue
 
 class Graph:
     Gr = dict(dict())
@@ -8,10 +10,11 @@ class Graph:
     Weighted = True
     Directed = True
 
-    def __init__(self, DICT, dir, w):
+    def __init__(self, DICT, dir, w, dtype):
         self.Gr = copy.deepcopy(DICT)
         self.Directed = dir
         self.Weighted = w
+        self.dtype = dtype
 
     @classmethod
     def createFromFile(cls, path, dtype=str):
@@ -19,7 +22,7 @@ class Graph:
         flag = True
         with open(path) as f:
             for line in f:
-                a = [x for x in line.upper().split()]
+                a = [x for x in line.split()]
                 if flag:
                     d = a[0].upper()
                     if d == "YES" or d == "DIRECTED":
@@ -32,7 +35,7 @@ class Graph:
                     w = a[1].upper()
                     if w == "YES" or w == "WEIGHTED":
                         w = True
-                    elif w == "NO" or w == "WEIGHTED":
+                    elif w == "NO" or w == "UNWEIGHTED":
                         w = False
                     else:
                         print(cmd_fail)
@@ -74,7 +77,7 @@ class Graph:
                     else:
                         temp[to][v] = 0
         try:
-            return cls(temp, dir, weighted)
+            return cls(temp, dir, weighted, dtype)
         except:
             print("PROCESS FAILED")
             return None
@@ -105,30 +108,32 @@ class Graph:
                 else:
                     temp[to][v] = 0
 
-        return cls(temp, dir, weighted)
+        return cls(temp, dir, weighted, dtype)
 
     @classmethod
     def createCopy(cls, other):
-        return cls(other.Gr, other.Directed, other.Weighted)
+        return cls(other.Gr, other.Directed, other.Weighted, other.dtype)
+
     @classmethod
     def createGrWoutLeaves(cls, graph):
         temp = Graph.createCopy(graph)
-        if temp == None :
+        if temp == None:
             return None
         if temp.Directed:
             return temp
 
-        lvs = [x for x in temp.Gr.keys() if len(temp.Gr[x])==1]
+        lvs = [x for x in temp.Gr.keys() if len(temp.Gr[x]) == 1]
         for v in lvs:
             for to in temp.Gr[v].keys():
                 temp.Gr[to].pop(v)
             temp.Gr.pop(v)
         return temp
+
     def Show(self):
+        print(self.dtype)
         print(self.Gr)
-        for v in self.Gr.values():
-            for e in v.values():
-                print(e)
+        #print("\n".join([" ".join([ (str(y), str(self.Gr[x][y])) for y in self.Gr[x].keys ])] ) for x in self.Gr.keys )
+
 
     def AddVertex(self, name):
         if (self.Gr.get(name) == None):
@@ -137,7 +142,7 @@ class Graph:
         return False
 
     def AddEdge(self, v, to, w=None):
-        if (self.Weighted and w == None) or not self.Weighted and w or not self.Gr.get(v) or not self.Gr.get(to) or \
+        if (self.Weighted and w == None) or (not self.Weighted and w) or not self.Gr.get(v) or not self.Gr.get(to) or \
                 self.Gr[v].get(to) != None:
             return False
 
@@ -163,20 +168,24 @@ class Graph:
 
             return True
         return False
+
     def outdeg(self, name):
         if self.Gr.get(name) == None:
             return None
         return len(self.Gr[name])
+
     def PrintAllBut(self, name):
         for v in self.Gr.keys():
             if v != name:
                 if self.Gr[v].get(name) == None and (self.Gr.get(name) == None or self.Gr[name].get(v) == None):
                     print(v)
+
     def Leaves(self):
         if self.Directed:
-            return("Graph is Directed, impossible to perform the operation")
+            return ("Graph is Directed, impossible to perform the operation")
             return None
         return (" ".join(map(str, [x for x in self.Gr.keys() if len(self.Gr[x]) == 1])))
+
     def FindNumOfPaths(self, u, v):
         q = queue.Queue()
         paths = dict.fromkeys(self.Gr.keys(), 0)
@@ -187,10 +196,6 @@ class Graph:
             k = q.get()
             for temp in self.Gr[k].keys():
                 paths[temp] = paths[k] + paths[temp]
-                
-                
-                
-
 
 
 cmd_create = "CREATE_GRAPH"
@@ -207,6 +212,8 @@ cmd_degree = "DEGREE"
 cmd_print_all_but = "PRINT_ALL_VERTICES_THAT_ARE_NOT_CONNECTED_WITH"
 cmd_lvs = "PRINT_LEAVES"
 cmd_graphwoutlvs = "GET_GRAPH_WITHOUT_LEAVES"
+
+
 def Menu():
     print(cmd_create)
     print(cmd_file)
@@ -277,7 +284,7 @@ while True:
                 continue
             ngr = Graph.createConsole(n, d, w)  # CONSTRUCTOR CALL
             flag = False
-        if decision == cmd_file:  # CREATE FROM FILE
+        elif decision == cmd_file:  # CREATE FROM FILE
             path = input()
             """
             print("DIRECTED")
@@ -360,7 +367,7 @@ while True:
         v = ngr.dtype(input())
         print("TO:")
         v2 = ngr.dtype(input())
-
+        w = None
         if ngr.Weighted:
             print("WEIGHT:")
             w = int(input())
@@ -369,7 +376,7 @@ while True:
         continue
     if decision[0] == cmd_node:
         print("NEW:")
-        node = input().split()[0].upper()
+        node = input().split()[0]
         if not ngr.AddVertex(node):
             print(cmd_fail)
         continue
@@ -397,8 +404,9 @@ while True:
         continue
     if decision[0] == cmd_degree:
         print("VERTEX")
-        vofd = ngr.dtype(input().upper())
-        if ngr.outdeg(vofd) :
+        print(ngr.dtype)
+        vofd = ngr.dtype(input())
+        if ngr.outdeg(vofd):
             print(ngr.outdeg(vofd))
         else:
             print(cmd_fail)
@@ -417,7 +425,7 @@ while True:
         temp.Show()
         ngr.Show()
         print(temp.Leaves())
-        #print(ngr.Gr)
+        # print(ngr.Gr)
         continue
     if decision[0] == cmd_exit:
         print("Rate my performance:")
@@ -426,4 +434,3 @@ while True:
 
     print(cmd_fail)
     print("try again")
-
