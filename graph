@@ -58,11 +58,15 @@ class Graph:
                     continue
                 if weighted and len(a) == 2:
                     weighted = False
-                if len(a) < 2:
-                    print(cmd_fail)
-                    return
+                if len(a) == 1:
+                    v = dtype(a[0])
+                    temp[v] = dict()
+                    continue
+
                 v = dtype(a[0])
                 to = dtype(a[1])
+                if v == to and not dir:
+                    continue
                 if v not in temp:
                     temp[v] = dict()
                 if to not in temp:
@@ -70,12 +74,12 @@ class Graph:
                 if weighted:
                     temp[v][to] = int(a[2])
                 else:
-                    temp[v][to] = 0
+                    temp[v][to] = 1
                 if not dir:
                     if weighted:
                         temp[to][v] = int(a[2])
                     else:
-                        temp[to][v] = 0
+                        temp[to][v] = 1
         try:
             return cls(temp, dir, weighted, dtype)
         except:
@@ -89,11 +93,12 @@ class Graph:
             a = [x for x in input().split()]
             if weighted and len(a) == 2:
                 weighted = False
-            if len(a) < 2:
-                print(cmd_fail)
-                return
+            if len(a) == 1:
+                temp[dtype(a[0])] = dict()
+                continue
             v = dtype(a[0])
             to = dtype(a[1])
+
             if v not in temp:
                 temp[v] = dict()
             if to not in temp:
@@ -101,15 +106,18 @@ class Graph:
             if weighted:
                 temp[v][to] = int(a[2])
             else:
-                temp[v][to] = 0
+                temp[v][to] = 1
             if not dir:
                 if weighted:
                     temp[to][v] = int(a[2])
                 else:
-                    temp[to][v] = 0
+                    temp[to][v] = 1
 
         return cls(temp, dir, weighted, dtype)
-
+    def WriteTXT(self, path):
+        with open(path, 'w') as f:
+            f.write(self.Show())
+            return True
     @classmethod
     def createCopy(cls, other):
         return cls(other.Gr, other.Directed, other.Weighted, other.dtype)
@@ -130,10 +138,13 @@ class Graph:
         return temp
 
     def Show(self):
-        print(self.dtype)
-        print(self.Gr)
-        #print("\n".join([" ".join([ (str(y), str(self.Gr[x][y])) for y in self.Gr[x].keys ])] ) for x in self.Gr.keys )
 
+        space = " "
+        #print("\n".join([" ".join([ str(str(y), str(self.Gr[x][y])) for y in self.Gr[x].keys])] ) for x in self.Gr.keys )
+       # for x in self.Gr:
+        return ('\n'.join([f"{x}: { ', '.join([ str(y) + ' ' + str(self.Gr[x][y]) for y in self.Gr[x] ])  }" for x in self.Gr]))
+
+# ' '.join([str(y) , str(self.Gr[x][y])]])
 
     def AddVertex(self, name):
         if (self.Gr.get(name) == None):
@@ -143,12 +154,18 @@ class Graph:
 
     def AddEdge(self, v, to, w=None):
         if (self.Weighted and w == None) or (not self.Weighted and w) or not self.Gr.get(v) or not self.Gr.get(to) or \
-                self.Gr[v].get(to) != None:
+                self.Gr[v].get(to) != None or v == to and not self.Directed:
             return False
+        if self.Weighted:
+            self.Gr[v][to] = w
+        else:
+            self.Gr[v][to] = 1
 
-        self.Gr[v][to] = w
         if not self.Directed:
-            self.Gr[to][v] = w
+            if self.Weighted:
+                self.Gr[to][v] = w
+            else:
+                self.Gr[to][v] = 1
         return True
 
     def DelEdge(self, v, to):
@@ -212,6 +229,7 @@ cmd_degree = "DEGREE"
 cmd_print_all_but = "PRINT_ALL_VERTICES_THAT_ARE_NOT_CONNECTED_WITH"
 cmd_lvs = "PRINT_LEAVES"
 cmd_graphwoutlvs = "GET_GRAPH_WITHOUT_LEAVES"
+cmd_write_file = "WRITE_TXT"
 
 
 def Menu():
@@ -227,6 +245,7 @@ def Menu():
     print(cmd_lvs)
     print(cmd_graphwoutlvs)
     print(cmd_exit)
+    print(cmd_write_file)
 
 
 """
@@ -359,7 +378,7 @@ while True:
             print("WEIGHTED")
         else:
             print("UNWEIGHTED")
-        ngr.Show()
+        print(ngr.Show())
         continue
 
     if decision[0] == cmd_edge:
@@ -389,6 +408,11 @@ while True:
             print(cmd_ok)
         else:
             print(cmd_fail)
+        continue
+    if decision[0] == cmd_write_file:
+        print("Path : ")
+        path = input()
+        ngr.WriteTXT(path)
         continue
     if decision[0] == cmd_file:
         path = input()
